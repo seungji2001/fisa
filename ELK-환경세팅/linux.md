@@ -1,56 +1,70 @@
 
-1. Elasticsearch
+**Elasticsearch**
+ 
+- 필요한 종속성을 설치
 
-필요한 종속성을 설치
-apt install curl wget gnupg2 wget -y
+	apt install curl wget gnupg2 wget -y
 
-Elasticsearch GPG 키를 추가
-curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elastic.gpg
+- Elasticsearch GPG 키를 추가
 
-Elasticsearch 저장소를 APT에 추가
-echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/7.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-7.x.list
+	curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elastic.gpg
 
-저장소의 캐시를 업데이트
-apt update -y
+- Elasticsearch 저장소를 APT에 추가
 
-Elasticsearch를 설치
-apt install elasticsearch -y
+	echo "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/7.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-7.x.list
 
-Elasticsearch 구성 파일을 편집
-network.host : 0.0.0.0
-http.port : 9200
-discovery.seed_host:["127.0.0.1"]
+- 저장소의 캐시를 업데이트
 
-2. Kibana 설치
+	apt update -y
 
-kibana GPG key
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+- Elasticsearch를 설치
 
-kibana repository 
-sudo sh -c 'echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list'
+	apt install elasticsearch -y
 
-packager list 업데이트 & kibana 설치
-sudo apt-get update
-sudo apt-get install kibana
+- Elasticsearch 구성 파일을 편집
+	
+	network.host : 0.0.0.0
+	http.port : 9200
+	discovery.seed_host:["127.0.0.1"]
 
-kibana 시작
-sudo systemctl start kibana
-sudo systemctl enable kibana
+**Kibana 설치**
 
-kibana 설정파일 수정
-sudo vi /etc/kibana/kibana.yml
-    elasticsearch.hosts: ["http://localhost:9200"]
+- kibana GPG key
 
-웹브라우저에서 확인
-http://localhost:5601
+	wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
-3. filebeat 설치
+- kibana repository 
 
-filebeat 설치
-sudo apt-get install filebeat
+	sudo sh -c 'echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list'
 
-filebeat 설정파일 수정
-sudo vi /etc/filebeat/filebeat.yml
+- packager list 업데이트 & kibana 설치
+
+	sudo apt-get update
+	sudo apt-get install kibana
+
+- kibana 시작
+	
+	sudo systemctl start kibana
+	sudo systemctl enable kibana
+
+- kibana 설정파일 수정
+
+	sudo vi /etc/kibana/kibana.yml
+	    elasticsearch.hosts: ["http://localhost:9200"]
+
+- 웹브라우저에서 확인
+
+	http://localhost:5601
+
+**filebeat 설치**
+
+- filebeat 설치
+
+	sudo apt-get install filebeat
+
+- filebeat 설정파일 수정
+
+	sudo vi /etc/filebeat/filebeat.yml
 
     output.elasticsearch:
         hosts: ["localhost:9200"]
@@ -59,42 +73,46 @@ sudo vi /etc/filebeat/filebeat.yml
         hosts: ["localhost:5044"]
 
     filebeat.inputs:
-   - type: log
-     enabled: true
-     paths: #읽어들일 파일 경로 설정
-       - /var/log/*.log
+	   - type: log
+	     enabled: true
+	     paths: #읽어들일 파일 경로 설정
+	       - /var/log/*.log
 
-filebeat 실행
-sudo systemctl enable filebeat
-sudo systemctl start filebeat
+- filebeat 실행
 
-4. logstash 파일 설치
+	sudo systemctl enable filebeat
+	sudo systemctl start filebeat
 
-logstash 파일 설치
-sudo apt-get update
-sudo apt-get install logstash
+**logstash 파일 설치**
 
-logstash 설정 파일 수정
-sudo vi /etc/logstash/conf.d/logstash.conf
+- logstash 파일 설치
 
-input {
-  beats {
-    port => 5044
-  }
-}
+	sudo apt-get update
+	sudo apt-get install logstash
 
-filter {
-  # Add any filters here
-}
+- logstash 설정 파일 수정
 
-output {
-  elasticsearch {
-    hosts => ["localhost:9200"]
-    index => #elasticsearch에서 보일 인덱스 명
-  }
-  stdout { codec => rubydebug }
-}
+	sudo vi /etc/logstash/conf.d/logstash.conf
 
-logstash 실행
-sudo systemctl enable logstash
-sudo systemctl start logstash
+	input {
+	  beats {
+	    port => 5044
+	  }
+	}
+	
+	filter {
+	  # Add any filters here
+	}
+	
+	output {
+	  elasticsearch {
+	    hosts => ["localhost:9200"]
+	    index => #elasticsearch에서 보일 인덱스 명
+	  }
+	  stdout { codec => rubydebug }
+	}
+
+- logstash 실행
+
+	sudo systemctl enable logstash
+	sudo systemctl start logstash
