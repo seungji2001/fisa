@@ -76,3 +76,25 @@ sudo apt-get install logstash
 
 logstash 설정 파일 수정
 sudo vi /etc/logstash/conf.d/logstash.conf
+
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  # Add any filters here
+}
+
+output {
+  elasticsearch {
+    hosts => ["localhost:9200"]
+    index => #elasticsearch에서 보일 인덱스 명
+  }
+  stdout { codec => rubydebug }
+}
+
+logstash 실행
+sudo systemctl enable logstash
+sudo systemctl start logstash
